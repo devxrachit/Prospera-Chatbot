@@ -81,7 +81,7 @@ function App() {
                     <span className="text-blue-500">💡</span> General knowledge
                   </div>
                   <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <span className="text-blue-500">🔧</span> Comical conversations
+                    <span className="text-blue-500">😹</span> Comical conversations
                   </div>
                   <div className="bg-white p-4 rounded-lg shadow-sm">
                     <span className="text-blue-500">📝</span> Writing assistance
