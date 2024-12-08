@@ -59,7 +59,7 @@ function App() {
              rel="noopener noreferrer"
              className="block">
             <h1 className="text-4xl font-bold text-blue-500 hover:text-blue-600 transition-colors">
-              Prospera AI Chatbot
+              Prospera's AI Chatbot
             </h1>
           </a>
         </header>
