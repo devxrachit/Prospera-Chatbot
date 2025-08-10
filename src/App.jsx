@@ -77,7 +77,8 @@ function App() {
             rel="noopener noreferrer"
             className="block">
             <h1 className="text-4xl font-bold text-blue-500 hover:text-blue-600 transition-colors">
-              Prospera's AI Chatbot
+              Prospera AI Chatbot
+            
             </h1>
           </a>
         </header>
@@ -89,10 +90,10 @@ function App() {
         >
           {chatHistory.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6">
-              <div className="bg-blue-100 rounded-xl p-8 max-w-2xl">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">Welcome to Chat AI! 👋</h2>
+              <div className="bg-gray-500 rounded-xl p-8 max-w-2xl">
+                <h2 className="text-2xl font-bold text-blue-900 mb-4">Welcome! 👋</h2>
                 <p className="text-gray-900 mb-4">
-                  I'm here to help you with anything you'd like to know buddy:
+                  I'm here to help you with anything:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                   <div className="bg-black p-2 rounded-lg shadow-sm">
@@ -120,7 +121,7 @@ function App() {
                   <div className={`inline-block max-w-[80%] p-3 rounded-lg overflow-auto hide-scrollbar ${
                     chat.type === 'question'
                       ? 'bg-blue-500 text-white rounded-br-none'
-                      : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                      : 'bg-gray-800 text-white rounded-bl-none'
                   }`}>
                     <ReactMarkdown className="overflow-auto hide-scrollbar">{chat.content}</ReactMarkdown>
                   </div>
@@ -138,7 +139,7 @@ function App() {
         </div>
 
         {/* Fixed Input Form */}
-        <form onSubmit={generateAnswer} className="bg-black-900 rounded-lg shadow-lg p-4">
+        <form onSubmit={generateAnswer} className="bg-black-400 rounded-lg shadow-lg p-4">
           <div className="flex gap-2">
             <textarea
               required
