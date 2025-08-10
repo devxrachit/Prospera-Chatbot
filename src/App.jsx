@@ -83,7 +83,7 @@ function App() {
           </a>
         </header>
 
-        {/* Scrollable Chat Container */}
+        {/* Scrollable Chat */}
         <div
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto mb-4 rounded-lg bg-black shadow-lg p-4 hide-scrollbar"
