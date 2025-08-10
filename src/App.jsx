@@ -72,7 +72,7 @@ function App() {
       <div className="h-full max-w-4xl mx-auto flex flex-col p-3">
         {/* Fixed Header */}
         <header className="text-center py-4">
-          <a href="https://github.com/Alphax81"
+          <a href=" "
             target="_blank"
             rel="noopener noreferrer"
             className="block">
