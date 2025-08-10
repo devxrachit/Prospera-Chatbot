@@ -36,7 +36,8 @@ function App() {
           "Content-Type": "application/json",
         },
         data: {
-          contents: [{ parts: [{ text: currentQuestion }] }],
+          contents: [{ parts: [{ text: `Please answer briefly: ${currentQuestion}` }] }],
+          
         },
       });
 
