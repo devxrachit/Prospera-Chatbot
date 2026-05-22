@@ -1,0 +1,14 @@
+# syntax=docker/dockerfile:1
+
+ARG NODE_VERSION=22
+
+FROM node:${NODE_VERSION}-alpine
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+
+CMD ["npx", "tsx", "worker/index.ts"]
