@@ -1,10 +1,9 @@
 # Prospera
 
-Prospera is a production-grade agentic AI assistant. It doesn't just wrap a single LLM call — the agent reasons over your query, autonomously selects and chains tools (web search, document RAG, code execution, SQL, live APIs), streams its reasoning and tool steps token-by-token, and cites every source.
+Prospera is a production-grade agentic AI assistant, not just a wrapper around a single LLM call. It reasons over your query, autonomously selects and chains tools (web search, document RAG, code execution, SQL, live APIs), streams its reasoning and tool steps token by token, and cites every source.
 
-> **Security notice:** A previous version of this repository committed a live Google Gemini API key in `.env`. That key is now **compromised and must be rotated** at https://aistudio.google.com/app/apikey. The key has been removed from the active codebase and `.env` is now in `.gitignore`.
-
----
+> [!WARNING]
+> A previous version of this repository committed a live Google Gemini API key in `.env`. That key is now compromised and must be rotated at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey). It has since been removed from the active codebase, and `.env` is now in `.gitignore`.
 
 ## Architecture
 
@@ -51,8 +50,6 @@ graph TB
     Pipeline --> PG
 ```
 
----
-
 ## Stack
 
 | Layer | Technology |
@@ -68,16 +65,14 @@ graph TB
 | Styling | Tailwind CSS v4 + shadcn/ui |
 | Deploy | Docker Compose (self-hosted) or Vercel + Neon + Upstash |
 
----
-
 ## Quickstart (Docker Compose)
 
-**Prerequisites:** Docker Desktop, `node` (for running migrations locally).
+Prerequisites: Docker Desktop and Node.js (for running migrations locally).
 
 ```bash
 # 1. Clone and set up secrets
 cp .env.example .env.local
-# Edit .env.local — minimum: set NEXTAUTH_SECRET and one AI provider key
+# Edit .env.local: at minimum, set NEXTAUTH_SECRET and one AI provider key
 
 # 2. Start Postgres + Redis
 docker compose up postgres redis -d
@@ -89,9 +84,7 @@ DATABASE_URL=postgresql://prospera:prospera@localhost:5432/prospera npm run db:m
 docker compose up --build
 ```
 
-App available at http://localhost:3000.
-
----
+The app will be available at `http://localhost:3000`.
 
 ## Local development
 
@@ -104,9 +97,7 @@ npm run dev                  # Next.js on :3000 (Turbopack)
 npm run worker:dev           # BullMQ worker (separate terminal)
 ```
 
----
-
-## Database commands
+### Database commands
 
 ```bash
 npm run db:generate   # generate migration files from schema changes
@@ -114,49 +105,41 @@ npm run db:migrate    # apply migrations + create pgvector HNSW index
 npm run db:studio     # Drizzle Studio UI on :4983
 ```
 
----
-
 ## Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | ✅ | — | PostgreSQL connection string |
-| `REDIS_URL` | ✅ | — | Redis connection string |
-| `NEXTAUTH_SECRET` | Phase 2+ | — | Auth.js secret (≥32 chars) |
-| `NEXTAUTH_URL` | Phase 2+ | — | Canonical app URL |
-| `AUTH_GITHUB_ID` | Optional | — | GitHub OAuth client ID |
-| `AUTH_GITHUB_SECRET` | Optional | — | GitHub OAuth client secret |
-| `AI_PROVIDER` | — | `anthropic` | Active provider: `anthropic` \| `openai` \| `google` |
-| `AI_MODEL` | — | `claude-sonnet-4-6` | Model slug passed to provider |
-| `ANTHROPIC_API_KEY` | If provider=anthropic | — | Anthropic API key |
-| `OPENAI_API_KEY` | If provider=openai | — | OpenAI API key |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | If provider=google | — | Google AI Studio key |
-| `SKIP_ENV_VALIDATION` | Build only | — | Skip env check during Docker build |
-
----
+| `DATABASE_URL` | Yes | - | PostgreSQL connection string |
+| `REDIS_URL` | Yes | - | Redis connection string |
+| `NEXTAUTH_SECRET` | Phase 2+ | - | Auth.js secret (32+ characters) |
+| `NEXTAUTH_URL` | Phase 2+ | - | Canonical app URL |
+| `AUTH_GITHUB_ID` | Optional | - | GitHub OAuth client ID |
+| `AUTH_GITHUB_SECRET` | Optional | - | GitHub OAuth client secret |
+| `AI_PROVIDER` | No | `anthropic` | Active provider: `anthropic`, `openai`, or `google` |
+| `AI_MODEL` | No | `claude-sonnet-4-6` | Model slug passed to the provider |
+| `ANTHROPIC_API_KEY` | If `AI_PROVIDER` is `anthropic` | - | Anthropic API key |
+| `OPENAI_API_KEY` | If `AI_PROVIDER` is `openai` | - | OpenAI API key |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | If `AI_PROVIDER` is `google` | - | Google AI Studio key |
+| `SKIP_ENV_VALIDATION` | Build only | - | Skip env validation during the Docker build |
 
 ## How the agent loop works
 
-1. **User sends a message.** The Next.js route handler receives the full conversation history.
-2. **`streamText` with `maxSteps`** — the AI SDK calls the model with tool schemas attached. The model returns a final text answer or a tool call.
-3. **Tool execution.** The SDK calls the matching tool (web search, RAG, sandbox, etc.). Results are appended to context and the loop continues.
-4. **Chaining.** Steps repeat until the model emits a final response (up to `maxSteps` guard).
-5. **Streaming to the client.** Tokens and tool events stream to the UI via the AI SDK `useChat` hook, which renders each step in real time.
-6. **Persistence.** After streaming completes, the full message (all parts) is written to Postgres.
-
----
+1. **Request.** The user sends a message, and the Next.js route handler receives the full conversation history.
+2. **Model call.** `streamText` runs with `maxSteps`, so the AI SDK calls the model with tool schemas attached. The model returns either a final answer or a tool call.
+3. **Tool execution.** The SDK invokes the matching tool (web search, RAG, sandbox, and so on). Results are appended to the context, and the loop continues.
+4. **Chaining.** Steps repeat until the model produces a final response, capped by the `maxSteps` guard.
+5. **Streaming to the client.** Tokens and tool events stream to the UI through the AI SDK's `useChat` hook, which renders each step as it happens.
+6. **Persistence.** Once streaming finishes, the full message, including all of its parts, is written to Postgres.
 
 ## Build phases
 
 | Phase | Status | Description |
 |---|---|---|
-| 1 — Scaffold & infra | ✅ | Next.js 15, Tailwind v4, Drizzle, Docker Compose, env validation |
-| 2 — Auth + chat shell | 🔜 | Auth.js, conversation sidebar, streamed model call |
-| 3 — Agent core + tools | Planned | AI SDK agent loop, web search, sandbox, weather |
-| 4 — RAG pipeline | Planned | Document upload, BullMQ ingestion, pgvector retrieval |
-| 5 — Polish & hardening | Planned | Rate limiting, tests, accessibility, final UI |
-
----
+| 1. Scaffold & infra | Done | Next.js 15, Tailwind v4, Drizzle, Docker Compose, env validation |
+| 2. Auth + chat shell | In progress | Auth.js, conversation sidebar, streamed model call |
+| 3. Agent core + tools | Planned | AI SDK agent loop, web search, sandbox, weather |
+| 4. RAG pipeline | Planned | Document upload, BullMQ ingestion, pgvector retrieval |
+| 5. Polish & hardening | Planned | Rate limiting, tests, accessibility, final UI |
 
 ## Testing
 
@@ -166,11 +149,9 @@ npm run test:run   # single run (CI)
 npm run typecheck  # TypeScript strict check
 ```
 
----
-
 ## Vercel + managed services (production path)
 
-1. Push to GitHub and import into Vercel.
-2. Add a **Neon Postgres** and **Upstash Redis** integration from the Vercel Marketplace.
-3. Set env vars in the Vercel dashboard (AI keys, `NEXTAUTH_SECRET`, OAuth credentials).
-4. Deploy — for the BullMQ worker, use Railway, Render, or a Vercel Cron Job.
+1. Push to GitHub and import the project into Vercel.
+2. Add a Neon Postgres and an Upstash Redis integration from the Vercel Marketplace.
+3. Set the environment variables in the Vercel dashboard (AI keys, `NEXTAUTH_SECRET`, OAuth credentials).
+4. Deploy. For the BullMQ worker, use Railway, Render, or a Vercel Cron Job.
